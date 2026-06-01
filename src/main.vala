@@ -31,7 +31,7 @@ namespace Singularity.Apps {
         public CalculatorWindow(Gtk.Application app) {
             Object(application: app);
 
-            set_title("Calculator");
+            set_title(_("Calculator"));
             set_default_size(360, 580);
 
             _mode_bubble = add_bubble_text("Basic", () => toggle_mode());
@@ -79,11 +79,11 @@ namespace Singularity.Apps {
         private void toggle_mode() {
             is_advanced = !is_advanced;
             if (is_advanced) {
-                _mode_bubble.label = "Advanced";
+                _mode_bubble.label = _("Advanced");
                 main_box.remove(basic_keypad);
                 main_box.append(advanced_keypad);
             } else {
-                _mode_bubble.label = "Basic";
+                _mode_bubble.label = _("Basic");
                 main_box.remove(advanced_keypad);
                 main_box.append(basic_keypad);
             }
@@ -120,11 +120,11 @@ namespace Singularity.Apps {
             var deg_btn = new Button();
             deg_btn.add_css_class("calc-btn");
             deg_btn.add_css_class("func-btn");
-            deg_rad_label = new Label("Deg");
+            deg_rad_label = new Label(_("Deg"));
             deg_btn.set_child(deg_rad_label);
             deg_btn.clicked.connect(() => {
                 use_degrees = !use_degrees;
-                deg_rad_label.label = use_degrees ? "Deg" : "Rad";
+                deg_rad_label.label = use_degrees ? _("Deg") : _("Rad");
             });
             advanced_keypad.attach(deg_btn, 4, 0, 1, 1);
             add_key(advanced_keypad, "(", 0, 1, "func-btn", () => open_paren());
@@ -360,6 +360,16 @@ namespace Singularity.Apps {
         }
 
         public static int main(string[] args) {
+        Intl.setlocale(GLib.LocaleCategory.ALL, "");
+        string locale_dir = "/usr/share/locale";
+        try {
+            string exe = GLib.FileUtils.read_link("/proc/self/exe");
+            locale_dir = GLib.Path.build_filename(GLib.Path.get_dirname(GLib.Path.get_dirname(exe)), "share", "locale");
+        } catch (GLib.Error e) { }
+        Intl.bindtextdomain("singularity-calculator", locale_dir);
+        Intl.bind_textdomain_codeset("singularity-calculator", "UTF-8");
+        Intl.textdomain("singularity-calculator");
+
             var app = new CalculatorApp();
             return app.run(args);
         }
