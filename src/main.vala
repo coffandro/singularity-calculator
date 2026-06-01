@@ -26,6 +26,7 @@ namespace Singularity.Apps {
         private GLib.List<string> paren_op_stack   = new GLib.List<string>();
 
         private Label deg_rad_label;
+        private Button _mode_bubble;
 
         public CalculatorWindow(Gtk.Application app) {
             Object(application: app);
@@ -33,10 +34,7 @@ namespace Singularity.Apps {
             set_title("Calculator");
             set_default_size(360, 580);
 
-            mode_btn.add_css_class("flat");
-            mode_btn.clicked.connect(toggle_mode);
-            toolbar.set_title_widget(mode_btn);
-            toolbar.is_static = false;
+            _mode_bubble = add_bubble_text("Basic", () => toggle_mode());
 
             main_box.add_css_class("calculator-app");
             populate_basic_keypad();
@@ -81,11 +79,11 @@ namespace Singularity.Apps {
         private void toggle_mode() {
             is_advanced = !is_advanced;
             if (is_advanced) {
-                mode_label.label = "Advanced";
+                _mode_bubble.label = "Advanced";
                 main_box.remove(basic_keypad);
                 main_box.append(advanced_keypad);
             } else {
-                mode_label.label = "Basic";
+                _mode_bubble.label = "Basic";
                 main_box.remove(advanced_keypad);
                 main_box.append(basic_keypad);
             }
@@ -111,7 +109,7 @@ namespace Singularity.Apps {
             add_key(basic_keypad, "0", 0, 4, "num-btn", () => append_digit("0"));
             add_key(basic_keypad, ".", 1, 4, "num-btn", () => append_dot());
             add_key(basic_keypad, "π", 2, 4, "func-btn", () => append_pi());
-            add_key(basic_keypad, "=", 3, 4, "accent-btn", () => calculate());
+            add_key(basic_keypad, "=", 3, 4, "suggested-action", () => calculate());
         }
 
         private void populate_advanced_keypad() {
@@ -153,7 +151,7 @@ namespace Singularity.Apps {
             add_key(advanced_keypad, ".", 1, 5, "num-btn", () => append_dot());
             add_key(advanced_keypad, "π", 2, 5, "func-btn", () => append_pi());
             add_key(advanced_keypad, "+", 3, 5, "op-btn", () => set_op("+"));
-            add_key(advanced_keypad, "=", 4, 5, "accent-btn", () => calculate());
+            add_key(advanced_keypad, "=", 4, 5, "suggested-action", () => calculate());
         }
 
         private delegate void ClickedCallback();
@@ -371,16 +369,16 @@ namespace Singularity.Apps {
             provider.load_from_data(CALC_CSS.data);
             Gtk.StyleContext.add_provider_for_display(
                 Gdk.Display.get_default(), provider,
-                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+                Gtk.STYLE_PROVIDER_PRIORITY_USER + 2);
         }
 
         private const string CALC_CSS = """
 .calculator-app {
-    background-color: @surface_raised;
+    background-color: @window_bg;
 }
 
 .calculator-display {
-    background-color: @surface_raised;
+    background-color: transparent;
     padding: 24px;
     padding-top: 60px;
 }
@@ -429,13 +427,14 @@ namespace Singularity.Apps {
 }
 
 .calculator-keypad {
-    background-color: @surface_dim;
+    background-color: mix(@window_bg, @accent_color, 0.12);
     padding: 16px;
+    border-top: 1px solid @border_color;
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
 }
 
-.calc-btn {
+button.calc-btn {
     border-radius: 12px;
     font-size: 20px;
     font-weight: 500;
@@ -445,49 +444,33 @@ namespace Singularity.Apps {
     padding: 0;
 }
 
-.num-btn {
-    background-color: @surface_bright;
+button.calc-btn.num-btn,
+button.calc-btn.func-btn {
+    background-color: alpha(@text_color, 0.06);
     color: @text_color;
 }
-
-.num-btn:hover {
-    background-color: @surface_bright;
+button.calc-btn.num-btn:hover,
+button.calc-btn.func-btn:hover {
+    background-color: alpha(@text_color, 0.12);
+}
+button.calc-btn.num-btn:active,
+button.calc-btn.func-btn:active {
+    background-color: alpha(@text_color, 0.18);
 }
 
-.num-btn:active {
-    background-color: @surface_alt;
-}
-
-.op-btn {
-    background-color: @surface_alt;
+button.calc-btn.op-btn {
+    background-color: alpha(@accent_color, 0.22);
     color: @text_color;
 }
-
-.op-btn:hover {
-    background-color: @surface_bright;
+button.calc-btn.op-btn:hover {
+    background-color: alpha(@accent_color, 0.32);
+}
+button.calc-btn.op-btn:active {
+    background-color: alpha(@accent_color, 0.42);
 }
 
-.func-btn {
-    background-color: @surface_alt;
-    color: @text_color;
-}
-
-.func-btn:hover {
-    background-color: @surface_bright;
-}
-
-.accent-btn {
-    background-color: @accent_color;
-    color: @accent_fg;
+button.calc-btn.suggested-action {
     font-size: 28px;
-}
-
-.accent-btn:hover {
-    background-color: mix(@accent_color, white, 0.15);
-}
-
-.accent-btn:active {
-    background-color: mix(@accent_color, black, 0.15);
 }
 """;
     }
