@@ -1,10 +1,10 @@
-# Contributing to singularity-files
+# Contributing to singularity-calculator
 
 ## Development setup
 
 ```bash
-git clone https://github.com/singularityos-lab/singularity-files
-cd singularity-files
+git clone https://github.com/singularityos-lab/singularity-calculator
+cd singularity-calculator
 meson setup build
 ninja -C build
 ```
